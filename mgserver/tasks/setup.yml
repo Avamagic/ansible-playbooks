@@ -1,0 +1,31 @@
+# setup repo
+- name: prepare for apt_repository
+  apt: pkg=python-software-properties state=present
+
+- name: add nginx ppa
+  apt_repository: repo=ppa:nginx/stable state=present
+
+- name: add mongodb key
+  command: apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10 creates=/etc/apt/sources.list.d/10gen.list
+
+- name: add mongodb repo
+  copy: src=files/10gen.list dest=/etc/apt/sources.list.d/10gen.list
+
+# install packages
+- name: install ubuntu packages
+  apt: pkg=$item state=present update-cache=yes
+  with_items:
+    - nginx
+    - uwsgi
+    - uwsgi-plugin-python
+    - python-pip
+    - build-essential
+    - python-dev
+    - mongodb-10gen
+    - git-core
+
+- name: install python packages
+  pip: name=$item state=present
+  with_items:
+    - pip
+    - virtualenv
