@@ -1,0 +1,10 @@
+---
+- hosts: webservers
+  user: ubuntu
+  sudo: True
+
+  vars_files:
+    - ../global_vars.yml
+    - vars/main.yml
+  tasks:
+    - include: tasks/deploy.yml

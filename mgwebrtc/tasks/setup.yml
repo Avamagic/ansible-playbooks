@@ -1,0 +1,18 @@
+# setup repo
+- name: prepare for apt_repository
+  apt: pkg=python-software-properties update-cache=yes state=present
+
+- name: add nodejs ppa
+  apt_repository: repo=ppa:chris-lea/node.js state=present
+
+# install packages
+- name: install ubuntu packages
+  apt: pkg=$item state=present
+  with_items:
+    - build-essential
+    - git-core
+    - nodejs
+    - supervisor
+
+- name: fix nodejs executable location
+  file: src=/usr/bin/nodejs dest=/usr/bin/node state=link

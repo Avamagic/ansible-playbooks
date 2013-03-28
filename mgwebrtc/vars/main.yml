@@ -1,0 +1,6 @@
+app_url: api.avamagic.com
+app_name: mgwebrtc
+repo_url: https://github.com/webRTC/webrtc.io-demo.git
+repo_remote: origin
+repo_version: master
+webapps_dir: /srv/webapps

@@ -1,0 +1,19 @@
+- name: fetch mgwebrtc
+  git: repo=${repo_url} dest=${webapps_dir}/${app_name} version=${repo_version}
+  register: fetch_mgwebrtc
+
+- name: install mgwebrtc
+  command: /usr/bin/npm install chdir=${webapps_dir}/${app_name}
+  only_if: ${fetch_mgwebrtc.changed}
+
+- name: update supervisor config for mgwebrtc
+  template: src=templates/supervisor_mgwebrtc.conf dest=/etc/supervisor/conf.d/mgwebrtc.conf
+  register: supervisor_mgwebrtc
+
+- name: restart supervisor
+  service: name=supervisor state=restarted
+  only_if: ${supervisor_mgwebrtc.changed}
+
+- name: restart mgwebrtc
+  command: /usr/bin/supervisorctl restart mgwebrtc
+  only_if: ${fetch_mgwebrtc.changed}
