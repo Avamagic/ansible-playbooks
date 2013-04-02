@@ -13,15 +13,20 @@
   apt: pkg=$item state=present
   with_items:
     - nginx
-    - uwsgi
-    - uwsgi-plugin-python
     - python-pip
     - build-essential
+    - python-dev
+    - libev-dev
+    - cython
     - git-core
     - redis-server
+    - supervisor
 
-- name: install python packages
+- name: update pip
+  pip: name=pip state=latest
+
+- name: install global python packages
   pip: name=$item state=present
   with_items:
-    - pip
     - virtualenv
+    - uwsgi

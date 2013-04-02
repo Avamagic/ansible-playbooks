@@ -1,24 +1,16 @@
 # uwsgi app
-- name: create directory for app
-  file: path=${webapps_dir}/${app_name} state=directory
-
 - name: deploy code from repository
   git: repo=$repo_url dest=${webapps_dir}/${app_name}/src version=$repo_version
   register: app_src
 
 - name: install dependencies into virtualenv
   pip: requirements=${webapps_dir}/${app_name}/src/requirements.txt virtualenv=${webapps_dir}/${app_name}/.venv state=present
+  only_if: ${app_src.changed}
 
-- name: update uwsgi app
-  template: src=templates/uwsgi_app.ini dest=/etc/uwsgi/apps-available/${app_name}.ini
-  register: app_conf
-
-- name: symlink uwsgi app
-  file: src=/etc/uwsgi/apps-available/${app_name}.ini dest=/etc/uwsgi/apps-enabled/${app_name}.ini state=link
-
-- name: restart uwsgi
-  service: name=uwsgi state=restarted
-  only_if: ${app_src.changed} or ${app_conf.changed}
+# supervisor
+- name: update supervisor config for mgwebrtc
+  template: src=templates/supervisor_mgwebrtc.conf dest=/etc/supervisor/conf.d/mgwebrtc.conf
+  register: supervisor_mgwebrtc
 
 # nginx
 - name: remove default nginx site
@@ -31,6 +23,15 @@
 - name: symlink nginx site
   file: src=/etc/nginx/sites-available/${app_url} dest=/etc/nginx/sites-enabled/${app_url} state=link
 
+# restart service
 - name: restart nginx
   service: name=nginx state=restarted
   only_if: ${site_conf.changed}
+
+- name: restart supervisor
+  service: name=supervisor state=restarted
+  only_if: ${supervisor_mgwebrtc.changed}
+
+- name: restart mgwebrtc
+  command: /usr/bin/supervisorctl restart mgwebrtc
+  only_if: ${app_src.changed}
